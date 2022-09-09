@@ -10,7 +10,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class Dispatcher
 {
-    private static volatile Dispatcher instance;
     private HashMap<Class<? extends Event>, List<EventListener<? extends Event>>> listeners;
 
     private Dispatcher()
@@ -26,7 +25,6 @@ public class Dispatcher
     public void destroy()
     {
         listeners = null;
-        instance = null;
     }
 
     public <T extends Event> T dispatch(T event)

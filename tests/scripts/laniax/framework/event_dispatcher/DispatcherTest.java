@@ -26,8 +26,7 @@ public class DispatcherTest
     @AfterMethod
     public void tearDown()
     {
-        dispatcher.destroy();
-        dispatcher = null;
+        Application.destroyDispatcher();
     }
 
     public void dispatch()
@@ -40,9 +39,9 @@ public class DispatcherTest
         TestEventListener listener2 = new TestEventListener(event -> invoked.add("second"));
         TestEventListener listener3 = new TestEventListener(event -> invoked.add("third"));
 
-        dispatcher.addListener(Event.class, listener1, -10);
-        dispatcher.addListener(Event.class, listener2);
-        dispatcher.addListener(Event.class, listener3, 10);
+        dispatcher.addListener(TestEvent.class, listener1, -10);
+        dispatcher.addListener(TestEvent.class, listener2);
+        dispatcher.addListener(TestEvent.class, listener3, 10);
 
         TestEvent event = new TestEvent();
 
@@ -62,11 +61,11 @@ public class DispatcherTest
         TestEventListener listener2 = new TestEventListener(event -> System.out.println("Hello, second event"));
         TestEventListener listener3 = new TestEventListener(event -> System.out.println("Hello, third event"));
 
-        dispatcher.addListener(Event.class, listener1);
-        dispatcher.addListener(Event.class, listener2, 3);
-        dispatcher.addListener(Event.class, listener3, 1);
+        dispatcher.addListener(TestEvent.class, listener1);
+        dispatcher.addListener(TestEvent.class, listener2, 3);
+        dispatcher.addListener(TestEvent.class, listener3, 1);
 
-        List<EventListener<? extends Event>> listeners = dispatcher.getListeners(Event.class);
+        List<EventListener<? extends Event>> listeners = dispatcher.getListeners(TestEvent.class);
 
         Assert.assertEquals(listener2, listeners.get(0));
         Assert.assertEquals(listener1, listeners.get(1));
@@ -85,10 +84,10 @@ public class DispatcherTest
 
         class OtherEvent extends Event {}
 
-        dispatcher.addListener(Event.class, listener1);
-        dispatcher.addListener(Event.class, listener2, 3);
-        dispatcher.addListener(Event.class, listener3, 1);
-        dispatcher.addListener(Event.class, listener4, 4);
+        dispatcher.addListener(TestEvent.class, listener1);
+        dispatcher.addListener(TestEvent.class, listener2, 3);
+        dispatcher.addListener(TestEvent.class, listener3, 1);
+        dispatcher.addListener(TestEvent.class, listener4, 4);
 
         dispatcher.addListener(OtherEvent.class, listener1, 3);
         dispatcher.addListener(OtherEvent.class, listener2, 1);
@@ -109,12 +108,12 @@ public class DispatcherTest
 
         TestEventListener listener = new TestEventListener(event -> System.out.println("Hello, first event"));
 
-        dispatcher.addListener(Event.class, listener);
+        dispatcher.addListener(TestEvent.class, listener);
 
         Assert.assertEquals(1, dispatcher.getListeners().size());
         Assert.assertTrue(dispatcher.getListeners().contains(listener));
 
-        dispatcher.addListener(Event.class, listener); // adding the same listener for the same event type should do nothing
+        dispatcher.addListener(TestEvent.class, listener); // adding the same listener for the same event type should do nothing
 
         Assert.assertEquals(1, dispatcher.getListeners().size());
         Assert.assertTrue(dispatcher.getListeners().contains(listener));
@@ -123,7 +122,7 @@ public class DispatcherTest
 
         Assert.assertNotEquals(listener, listener2);
 
-        dispatcher.addListener(Event.class, listener2);
+        dispatcher.addListener(TestEvent.class, listener2);
 
         Assert.assertEquals(2, dispatcher.getListeners().size());
     }
@@ -134,18 +133,18 @@ public class DispatcherTest
 
         TestEventListener listener = new TestEventListener(event -> System.out.println("Hello, first event"));
         TestEventListener listener2 = new TestEventListener(event -> System.out.println("Hello, second event"));
-        dispatcher.addListener(Event.class, listener);
-        dispatcher.addListener(Event.class, listener2);
+        dispatcher.addListener(TestEvent.class, listener);
+        dispatcher.addListener(TestEvent.class, listener2);
 
         Assert.assertEquals(2, dispatcher.getListeners().size());
         Assert.assertTrue(dispatcher.getListeners().contains(listener));
 
-        dispatcher.removeListener(Event.class, listener);
+        dispatcher.removeListener(TestEvent.class, listener);
 
         Assert.assertEquals(1, dispatcher.getListeners().size());
         Assert.assertFalse(dispatcher.getListeners().contains(listener));
 
-        dispatcher.removeListener(Event.class, listener2);
+        dispatcher.removeListener(TestEvent.class, listener2);
 
         Assert.assertEquals(0, dispatcher.getListeners().size());
         Assert.assertFalse(dispatcher.getListeners().contains(listener2));

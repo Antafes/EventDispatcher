@@ -19,4 +19,10 @@ abstract public class Application
 
         return dispatcher;
     }
+
+    public static void destroyDispatcher()
+    {
+        dispatcher.destroy();
+        dispatcher = null;
+    }
 }
