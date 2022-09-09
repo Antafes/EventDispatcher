@@ -1,0 +1,153 @@
+resource_types:
+  - name: pull-request
+    type: docker-image
+    source:
+      repository: teliaoss/github-pr-resource
+
+resources:
+- name: event-dispatcher-repo
+  type: git
+  source:
+    uri: https://github.com/Antafes/EventDispatcher
+    branch: master
+    private_key: ((private_key))
+- name: event-dispatcher-repo-dev
+  type: git
+  source:
+    uri: https://github.com/Antafes/EventDispatcher
+    branch: dev
+    private_key: ((private_key))
+- name: event-dispatcher-repo-pr
+  type: pull-request
+  check_every: 10m
+  source:
+    repository: Antafes/EventDispatcher
+    access_token: ((acccess_token))
+- name: event-dispatcher-pre-release
+  type: github-release
+  source:
+    owner: Antafes
+    repository: EventDispatcher
+    pre_release: true
+    release: false
+    access_token: ((acccess_token))
+- name: event-dispatcher-release
+  type: github-release
+  source:
+    owner: Antafes
+    repository: EventDispatcher
+    release: true
+    drafts: false
+    access_token: ((acccess_token))
+
+jobs:
+- name: event-dispatcher-pr
+  plan:
+    - get: event-dispatcher-repo-pr
+      trigger: true
+      version: every
+    - put: event-dispatcher-repo-pr
+      params:
+        path: event-dispatcher-repo-pr
+        status: pending
+    - task: unit-test
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: maven
+            tag: 3-jdk-8
+        inputs:
+          - name: event-dispatcher-repo-pr
+        run:
+          path: ci/test.sh
+          args: ["((maven_access_token))"]
+          dir: event-dispatcher-repo-pr
+        caches:
+          - path: maven
+      on_failure:
+        put: event-dispatcher-repo-pr
+        params:
+          path: event-dispatcher-repo-pr
+          status: failure
+    - put: event-dispatcher-repo-pr
+      params:
+        path: event-dispatcher-repo-pr
+        status: success
+
+- name: event-dispatcher-dev
+  plan:
+  - get: event-dispatcher-pre-release
+  - get: event-dispatcher-repo-dev
+    trigger: true
+  - task: build
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: maven
+          tag: 3-jdk-8
+      inputs:
+      - name: event-dispatcher-pre-release
+      - name: event-dispatcher-repo-dev
+      outputs:
+      - name: dist
+      run:
+        path: ci/build-dev.sh
+        args: ["((maven_access_token))"]
+        dir: event-dispatcher-repo-dev
+      caches:
+        - path: maven
+  - put: event-dispatcher-pre-release
+    params:
+     name: dist/name
+     tag: dist/tag
+     commitish: dist/commit_sha
+     globs:
+      - dist/*.zip
+
+- name: event-dispatcher
+  plan:
+  - get: event-dispatcher-repo
+    trigger: true
+  - get: event-dispatcher-release
+  - task: check-version
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: debian
+          tag: stable-slim
+      inputs:
+      - name: event-dispatcher-repo
+      - name: event-dispatcher-release
+      run:
+        path: ci/check-version.sh
+        dir: event-dispatcher-repo
+  - task: build
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: maven
+          tag: 3-jdk-8
+      inputs:
+      - name: event-dispatcher-repo
+      outputs:
+      - name: dist
+      run:
+        path: ci/build.sh
+        args: ["((maven_access_token))"]
+        dir: event-dispatcher-repo
+      caches:
+        - path: maven
+  - put: event-dispatcher-release
+    params:
+      name: dist/name
+      tag: dist/tag
+      globs:
+      - dist/*.zip

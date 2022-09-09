@@ -1,36 +1,38 @@
 package scripts.laniax.framework.event_dispatcher;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.testng.Assert;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 /**
  * @author Laniax
  */
+@Test
 public class EventTest {
 
-    private Event event;
+    private TestEvent event;
 
-    @Before
-    public void setUp() throws Exception {
-        event = new Event();
+    @BeforeMethod
+    public void setUp()
+    {
+        event = new TestEvent();
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @AfterMethod
+    public void tearDown()
+    {
         event = null;
     }
 
-    @Test
-    public void isPropagationStopped() throws Exception {
+    public void isPropagationStopped()
+    {
         Assert.assertFalse(event.isPropagationStopped());
     }
 
-    @Test
-    public void stopPropagation() throws Exception {
+    public void stopPropagation()
+    {
         event.stopPropagation();
         Assert.assertTrue(event.isPropagationStopped());
     }
-
 }
