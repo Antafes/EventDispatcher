@@ -5,39 +5,42 @@ import java.util.function.Consumer;
 /**
  * A class representing the listener of an event.
  * The consumer (supplied through constructor or via overloading of the #onEvent method) will be executed when the event is raised.
- *
+ * <p>
  * The priority can be used to execute this listener before others, the listener with the highest priority will be executed first.
  *
  * @author Laniax
  */
-public class EventListener<T extends Event> {
-
+abstract public class EventListener<T extends Event>
+{
     private Consumer<T> consumer;
     private int priority;
 
-    public EventListener() {
+    public EventListener()
+    {
         this(null);
     }
 
-    public EventListener(Consumer<T> consumer) {
+    public EventListener(Consumer<T> consumer)
+    {
         this(consumer, 0);
     }
 
-    public EventListener(Consumer<T> consumer, int priority) {
+    public EventListener(Consumer<T> consumer, int priority)
+    {
         this.consumer = consumer;
         this.priority = priority;
     }
 
     /**
-     * Returns a Consumer that is trigger when the event is raised.
-     * @return
+     * Returns a Consumer that is triggered when the event is raised.
      */
-    protected Consumer<T> onEvent() {
+    protected Consumer<T> onEvent()
+    {
         return null;
     }
 
-    public void invoke(T event) {
-
+    public void invoke(T event)
+    {
         if (this.consumer == null)
             this.consumer = onEvent();
 
@@ -47,11 +50,13 @@ public class EventListener<T extends Event> {
         this.consumer.accept(event);
     }
 
-    public int getPriority() {
+    public int getPriority()
+    {
         return priority;
     }
 
-    public void setPriority(int value) {
+    public void setPriority(int value)
+    {
         priority = value;
     }
 }
